@@ -1,9 +1,9 @@
 /* GSA02 QA/QC – service worker: ให้แอปเปิดได้แม้ไม่มีเน็ต
    เมื่อแก้ไขแอป ให้เปลี่ยนเลข VERSION เพื่อให้ทุกเครื่องโหลดเวอร์ชันใหม่ */
-const VERSION = 'gsa02-qaqc-v1';
+const VERSION = 'gsa02-qaqc-v2';
 const CORE = [
   './', './index.html', './manifest.json',
-  './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-192.png', './icons/maskable-512.png'
+  './icon-192.png', './icon-512.png', './maskable-192.png', './maskable-512.png'
 ];
 const CDN = [
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',

@@ -1,1 +1,8 @@
-
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.ptummaru.twa",
+        "sha256_cert_fingerprints": ["A5:28:3C:09:8D:AF:0E:46:E5:AF:A3:3E:58:79:0F:B6:C4:99:1F:86:92:AE:02:BC:F7:0E:7A:7E:0B:17:34:38"]
+      }
+    }]

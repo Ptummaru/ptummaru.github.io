@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#057A37">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>GSA02 QA/QC – แจ้งปัญหาหน้างาน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root{--g:#057A37;--gd:#04602B;--gl:#E8F6EE;--ink:#1F2430;--mut:#5A6270;--line:#D5D9DF;--bg:#F4F5F7;--warn:#B4530A}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans Thai',system-ui,sans-serif;font-size:15px}
+header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line)}
+.top{display:flex;align-items:center;justify-content:space-between;padding:10px 14px}
+.top b{font-size:16px}.top small{display:block;color:var(--mut);font-size:11px}
+nav{display:grid;grid-template-columns:repeat(4,1fr)}
+nav button{height:44px;border:0;background:#fff;font:600 13px inherit;font-family:inherit;color:var(--mut);border-bottom:3px solid transparent}
+nav button.on{color:var(--gd);border-bottom-color:var(--g)}
+main{max-width:720px;margin:0 auto;padding:14px 14px 120px}
+section{display:none}section.on{display:block}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.card h3{margin:0 0 10px;font-size:14px;color:#3D4450}
+label.l{display:block;font-size:12px;color:var(--mut);margin:8px 0 4px}
+input,select,textarea{width:100%;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;font:15px inherit;font-family:inherit;background:#fff;color:var(--ink)}
+textarea{min-height:84px;resize:vertical}
+.row{display:grid;gap:8px;grid-template-columns:1fr 1fr}
+.row3{display:grid;gap:8px;grid-template-columns:1fr 1fr 1fr}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{min-height:42px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:#fff;font:500 14px inherit;font-family:inherit;color:var(--ink)}
+.chips button.on{border:1.5px solid var(--g);background:var(--gl);color:var(--gd);font-weight:600}
+.chips.sev button.on[data-v=Critical]{border-color:#A3171B;background:#FBE9E9;color:#86090D}
+.chips.sev button.on[data-v=Major]{border-color:var(--warn);background:#FDF0E4;color:#8A3E07}
+.btn{min-height:48px;padding:0 16px;border-radius:12px;border:0;background:var(--g);color:#fff;font:600 15px inherit;font-family:inherit;width:100%}
+.btn.sec{background:#fff;color:var(--gd);border:1.5px solid var(--g)}
+.btn.sm{min-height:40px;width:auto;font-size:13px}
+.btn:disabled{opacity:.5}
+.hint{font-size:12px;color:var(--mut);margin:6px 0 0}
+.ok{font-size:13px;color:var(--gd);background:var(--gl);border-radius:10px;padding:8px 12px;margin-top:8px}
+.viewer{position:relative;height:56vh;min-height:320px;background:#E9ECF0;border:1px solid var(--line);border-radius:12px;overflow:hidden;touch-action:none;user-select:none}
+.stage{position:absolute;left:0;top:0;transform-origin:0 0}
+.stage img{display:block;pointer-events:none}
+.mk{position:absolute;transform:translate(-50%,-100%);pointer-events:none}
+.mk.cal{transform:translate(-50%,-50%);width:26px;height:26px;border-radius:13px;border:3px solid #1D5FD1;background:rgba(29,95,209,.15);font:700 10px sans-serif;color:#1D5FD1;display:flex;align-items:center;justify-content:center}
+.vtools{position:absolute;right:8px;bottom:8px;display:flex;flex-direction:column;gap:6px;z-index:2}
+.vtools button{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:#fff;font:600 18px sans-serif}
+.vmsg{position:absolute;left:8px;top:8px;right:56px;z-index:2;background:rgba(31,36,48,.85);color:#fff;font-size:12px;padding:6px 10px;border-radius:8px;display:none}
+.photos{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
+.pick{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;margin-top:8px;border-radius:10px;border:1.5px dashed var(--g);color:var(--gd);font-weight:600;font-size:14px;cursor:pointer;background:#fff}
+.files{display:flex;flex-direction:column;gap:6px;margin-top:8px}.files:empty{display:none}
+.files div{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:13px;background:#F7F8FA}
+.files span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.files button{width:32px;height:32px;border-radius:16px;border:0;background:#E3E6EA}
+.photos:empty{display:none}
+.photos div{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:#ccc}
+.photos img{width:100%;height:100%;object-fit:cover}
+.photos button{position:absolute;top:2px;right:2px;width:28px;height:28px;border-radius:14px;border:0;background:rgba(0,0,0,.6);color:#fff}
+.list .it{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #EDEFF2}
+.list .it:last-child{border:0}
+.list .it img{width:64px;height:48px;object-fit:cover;border-radius:6px;background:#ddd}
+.list .it div{flex:1;min-width:0}.list .it b{display:block;font-size:14px}.list .it span{font-size:12px;color:var(--mut)}
+pre.msg{white-space:pre-wrap;background:#F7F8FA;border:1px solid var(--line);border-radius:10px;padding:12px;font:13px/1.55 inherit;font-family:inherit;margin:0}
+.out img{width:100%;border-radius:10px;border:1px solid var(--line);margin-top:8px}
+.outgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.outgrid img{aspect-ratio:1;object-fit:cover;margin:0}
+.outlbl{font-size:12px;font-weight:600;color:#3D4450;margin:12px 0 4px}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 14px 16px;z-index:20}
+.bar .in{max-width:720px;margin:0 auto;display:flex;gap:8px}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#1F2430;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;display:none;z-index:50;max-width:90vw;text-align:center}
+.sr{position:absolute;left:-9999px}
+.chk{display:flex;gap:8px;align-items:center;font-size:13px;margin-top:10px}.chk input{width:22px;min-height:22px;accent-color:var(--g)}
+</style>
+</head>
+<body>
+<header>
+  <div class="top"><div><b>GSA02 QA/QC</b><small id="who">ผู้ตรวจ: –</small></div><button class="btn sm sec" id="langBtn" type="button" aria-label="Switch language / เปลี่ยนภาษา">EN</button></div>
+  <nav>
+    <button data-tab="form" class="on">แจ้งปัญหา</button>
+    <button data-tab="dwg">แบบแปลน</button>
+    <button data-tab="log">ประวัติ</button>
+    <button data-tab="set">ตั้งค่า</button>
+  </nav>
+</header>
+<main>
+<!-- ============ FORM ============ -->
+<section id="form" class="on">
+  <div class="card">
+    <h3>1. Building</h3>
+    <div class="chips" id="cBuilding"></div>
+  </div>
+  <div class="card">
+    <h3>2. Location · Room · Floor</h3>
+    <div class="row">
+      <div><label class="l" for="fFloor">Floor</label><select id="fFloor"></select></div>
+      <div><label class="l" for="fRoomNo">Room No.</label><input id="fRoomNo" placeholder="เช่น L1-105"></div>
+    </div>
+    <label class="l" for="fRoom">Room / Location</label><input id="fRoom" placeholder="เช่น UPS Room 1-A">
+    <label class="l" for="fDwg" style="margin-top:14px">แบบแปลน · ปักหมุดตำแหน่ง</label>
+    <select id="fDwg"><option value="">– เลือกแบบ (เพิ่มได้ที่แท็บ แบบแปลน) –</option></select>
+    <div class="viewer" id="vForm" style="margin-top:8px;display:none">
+      <div class="vmsg"></div>
+      <div class="vtools"><button aria-label="ซูมเข้า" data-z="1.4">+</button><button aria-label="ซูมออก" data-z="0.7">−</button><button aria-label="พอดีจอ" data-z="fit">⤢</button></div>
+    </div>
+    <p class="hint" id="pinHint">แตะบนแบบเพื่อปักหมุด · สองนิ้วเพื่อซูม · ลากเพื่อเลื่อน · Grid ในข้อ 3 จะเติมให้เอง</p>
+  </div>
+  <div class="card">
+    <h3>3. Coordinate · Grid Line</h3>
+    <label class="l" for="fGrid">Grid (เติมอัตโนมัติจากหมุดในข้อ 2 แก้ไขได้)</label>
+    <input id="fGrid" placeholder="เช่น 1-6 ~ 1-7 / 1-C">
+  </div>
+  <div class="card">
+    <h3>4. Discipline</h3>
+    <div class="chips" id="cDisc"></div>
+  </div>
+  <div class="card">
+    <h3>5. Check Classification</h3>
+    <label class="sr" for="fCheck">Check Classification</label>
+    <select id="fCheck"></select>
+  </div>
+  <div class="card">
+    <h3>6. Problem</h3>
+    <label class="sr" for="fProblem">Problem</label>
+    <textarea id="fProblem" placeholder="พบอะไร ผิดจาก spec / แบบอย่างไร"></textarea>
+    <div class="photos" id="photoList"></div>
+    <label class="pick" for="fPhotos"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>แนบรูปถ่าย</label>
+    <input id="fPhotos" class="sr" type="file" accept="image/*" multiple>
+    <label class="l" for="fRef" style="margin-top:14px">อ้างอิง Spec / แบบ</label><input id="fRef" placeholder="เช่น Spec 26 05 36 · E-301">
+    <div class="files" id="refList"></div>
+    <label class="pick" for="fRefFile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 11l-8.5 8.5a5 5 0 01-7-7L14 4a3.5 3.5 0 015 5l-8.5 8.5a2 2 0 01-3-3L15 7"/></svg>แนบไฟล์อ้างอิง (PDF / รูป)</label>
+    <input id="fRefFile" class="sr" type="file" accept="application/pdf,image/*" multiple>
+  </div>
+  <div class="card">
+    <h3>7. Classification of Issue</h3>
+    <div class="chips" id="cType"></div>
+    <div class="chips sev" id="cSev" style="margin-top:8px"></div>
+    <label class="chk"><input type="checkbox" id="fRed">กระทบ Redundancy path (2N / N+1) – ต้องให้ CxA ตรวจปิด</label>
+  </div>
+  <div class="card">
+    <h3>8. Plan will be completed</h3>
+    <div class="row">
+      <div><label class="l" for="fDue">วันที่แล้วเสร็จ</label><input id="fDue" type="date"></div>
+      <div><label class="l" for="fOwner">ผู้รับผิดชอบ</label><input id="fOwner" placeholder="พิมพ์ชื่อผู้รับผิดชอบ / ผู้รับเหมา" autocomplete="off"></div>
+    </div>
+  </div>
+  <div class="card out" id="outCard" style="display:none">
+    <h3>ข้อความสำหรับ LINE</h3>
+    <pre class="msg" id="outMsg"></pre>
+    <div id="outImgs"></div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <button class="btn sm" id="bShare">แชร์ไป LINE (รูป+ข้อความ)</button>
+      <button class="btn sm sec" id="bCopy">คัดลอกข้อความ</button>
+      <a class="btn sm sec" id="bLineText" style="display:inline-flex;align-items:center;text-decoration:none" target="_blank" rel="noopener">ส่งเฉพาะข้อความ</a>
+      <button class="btn sm sec" id="bDlPin">บันทึกรูปแบบปักหมุด</button>
+      <button class="btn sm sec" id="bOutWord">Word</button>
+      <button class="btn sm sec" id="bOutPdf">PDF</button>
+    </div>
+    <p class="hint">บางเครื่อง LINE จะรับเฉพาะรูปเมื่อแชร์พร้อมกัน ข้อความถูกคัดลอกไว้แล้ว วางต่อในแชตได้เลย</p>
+  </div>
+</section>
+
+<!-- ============ DRAWINGS ============ -->
+<section id="dwg">
+  <div class="card">
+    <h3>เพิ่มแบบแปลน</h3>
+    <p class="hint" style="margin-top:0">เลือกไฟล์ PDF หรือรูปจากเครื่อง หรือจาก Google Drive (ในหน้าต่างเลือกไฟล์ของมือถือ) ระบบเก็บไว้ในเครื่องนี้ เปิดใช้ได้แม้ไม่มีเน็ต</p>
+    <label class="l" for="dFile">ไฟล์แบบ (PDF / JPG / PNG)</label>
+    <input id="dFile" type="file" accept="application/pdf,image/*">
+    <div class="row">
+      <div><label class="l" for="dPage">หน้า PDF</label><input id="dPage" type="number" min="1" value="1"></div>
+      <div><label class="l" for="dName">ชื่อแบบ</label><input id="dName" placeholder="E-301 CUB L1 Power"></div>
+    </div>
+    <div class="row">
+      <div><label class="l" for="dBld">Building</label><select id="dBld"></select></div>
+      <div><label class="l" for="dFlr">Floor</label><select id="dFlr"></select></div>
+    </div>
+    <div style="margin-top:12px"><button class="btn" id="dAdd">เพิ่มแบบ</button></div>
+  </div>
+  <div class="card" id="calCard" style="display:none">
+    <h3>ตั้งค่า Grid ของแบบ: <span id="calName"></span></h3>
+    <div class="row">
+      <div><label class="l" for="calCols">Grid แนวตั้ง (ซ้าย→ขวา)</label><input id="calCols"></div>
+      <div><label class="l" for="calRows">Grid แนวนอน (บน→ล่าง)</label><input id="calRows"></div>
+    </div>
+    <p class="hint">กดเริ่ม แล้วแตะจุดตัด Grid แรก (เช่น A/1) และจุดตัดสุดท้าย (เช่น F/6) บนแบบ · อาคาร 01 และ 02 ใส่ Grid พร้อมระยะ (เมตร) จาก Site Plan ไว้ให้แล้ว ถ้าแกนในแบบกลับด้านให้กด สลับแกน · รูปแบบ: ชื่อ:ระยะ เช่น A:0,B:8.4 หรือแค่ A,B,C ถ้าระยะเท่ากัน</p>
+    <div style="display:flex;gap:8px;margin:10px 0"><button class="btn sm" id="calStart">เริ่มแตะจุดตัด</button><button class="btn sm sec" id="calSwap">สลับแกน</button><button class="btn sm sec" id="calSave">บันทึก Grid</button></div>
+    <div class="viewer" id="vCal"><div class="vmsg"></div>
+      <div class="vtools"><button aria-label="ซูมเข้า" data-z="1.4">+</button><button aria-label="ซูมออก" data-z="0.7">−</button><button aria-label="พอดีจอ" data-z="fit">⤢</button></div>
+    </div>
+  </div>
+  <div class="card"><h3>แบบในเครื่อง</h3><div class="list" id="dList"><p class="hint">ยังไม่มีแบบ</p></div></div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section id="log">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3 style="margin:0">รายการที่แจ้งจากเครื่องนี้</h3><button class="btn sm sec" id="bSelAll">เลือก/ไม่เลือกทั้งหมด</button></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn sm" id="bWord">Export Word</button><button class="btn sm" id="bPdf">Export PDF</button><button class="btn sm sec" id="bCsv">Export CSV (สำหรับ Procore)</button></div>
+    <div style="margin-top:10px"><button class="btn sm" id="bClearLog" style="background:#fff;color:#A3171B;border:1.5px solid #A3171B">ล้างประวัติ</button></div>
+    <div class="list" id="logList" style="margin-top:8px"><p class="hint">ยังไม่มีรายการ</p></div>
+  </div>
+</section>
+
+<!-- ============ SETTINGS ============ -->
+<section id="set">
+  <div class="card">
+    <h3>ผู้ตรวจ</h3>
+    <div class="row">
+      <div style="grid-column:span 2"><label class="l" for="sName">ชื่อผู้ตรวจ (แสดงในข้อความ "แจ้งโดย")</label><input id="sName"></div>
+    </div>
+    <div style="margin-top:12px"><button class="btn" id="sSave">บันทึก</button></div>
+  </div>
+  <div class="card">
+    <h3>สำรอง / ย้ายเครื่อง</h3>
+    <p class="hint" style="margin-top:0">แบบและ Grid เก็บในเบราว์เซอร์ของเครื่องนี้ ถ้าล้างข้อมูลเบราว์เซอร์ต้องเพิ่มแบบใหม่ ไฟล์ต้นฉบับควรอยู่ใน Google Drive ของโครงการ</p>
+    <button class="btn sec" id="sClear">ล้างฟอร์มปัจจุบัน</button>
+  </div>
+</section>
+</main>
+
+<div class="bar" id="bar"><div class="in">
+  <button class="btn sec" id="bReset" style="width:38%">ล้างฟอร์ม</button>
+  <button class="btn" id="bGen">สร้างข้อความ + รูป</button>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== Config: แก้รายการตัวเลือกได้ที่นี่ ===== */
+const PROJECT='GSA02';
+/* จาก SITE PLAN GSA-02: อาคาร, จำนวนชั้น, Grid (เลขนำหน้า Grid = เลขอาคาร) */
+const BLDG={
+  '01 DC Building & Gantry':{floors:['L1','L2','L3','L4','L5','Roof'],
+     a:'1-1:0,1-2:7.5,1-3:15.5,1-4:23.5,1-5:31.5,1-6:39.5,1-7:47.5,1-8:55.5,1-9:63.5,1-10:71.5,1-11:79.5,1-12:87.8',
+     b:'1-X:0,1-Y:7.5,1-Z:15,1-A:20.75,1-B:28.65,1-C:39.05,1-D:49.45,1-E:57.35,1-G:68.15,1-I:77.35,1-J:82.35'},
+  '02 Utility Building':{floors:['L1','L2','Roof'],
+     a:'2-A:0,2-B:11.77,2-C:23.39,2-D:35.01,2-E:46.63,2-F:58.4',b:'[2-1,2-2,2-3 – per drawing]'},
+  '11 Sub Station':{floors:['L1','L2','L3','Roof'],a:'[11-A,11-B – per drawing]',b:'[11-1,11-2 – per drawing]'},
+  '12 Guard House A':{floors:['L1','Roof'],a:'[12-A … 12-E – per drawing]',b:'[12-1,12-2 – per drawing]'},
+  '13 Guard House B':{floors:['L1','Roof'],a:'',b:''},
+  '14 Bin Center':{floors:['L1'],a:'',b:''},
+  '15 Smoking Area':{floors:['L1'],a:'',b:''},
+  'Site / External Works':{floors:['Site'],a:'',b:''}
+};
+const BUILDINGS=Object.keys(BLDG);
+const FLOORS=['L1','L2','L3','L4','L5','Roof','Site'];
+const floorsOf=b=>(BLDG[b]&&BLDG[b].floors)||FLOORS;
+const DISC=[['ARC','Architectural'],['STR','Civil/Structural'],['ELE','Electrical'],['MEC','Mechanical'],['PLB','Plumbing'],['FP','Fire Protection'],['ELV','ELV/Security'],['BMS','BMS/EPMS/DCIM'],['TEL','Telecom/IT']];
+const CHECKS=['Material Inspection (MIR)','Work Inspection (IR)','Site Walk / Surveillance','Cx L1 – Factory (FAT)','Cx L2 – Delivery','Cx L3 – Installation','Cx L4 – Functional','Cx L5 – IST','Uptime TCCF pre-check'];
+const TYPES=[['QC','QAQC'],['PL','Punch list']];
+const SEVS=['Critical','Major','Minor'];
+
+
+/* ===== ภาษา / Language ===== */
+const DICT={"พื้นที่เก็บข้อมูลในเครื่องเต็ม – ล้างประวัติหรือลบแบบที่ไม่ใช้": "Device storage is full – clear history or delete unused drawings", "บันทึกลงเครื่องไม่สำเร็จ": "Could not save on this device", "ภาพใหญ่เกินกว่าที่เครื่องนี้รองรับ": "Image too large for this device", "เปิดไฟล์รูปนี้ไม่ได้ (ถ้าเป็น HEIC ให้แปลงเป็น JPG)": "Cannot open this image (convert HEIC to JPG)","เลือก/ไม่เลือกทั้งหมด": "Select / deselect all", "เลือก": "Select", "เลือกรายการก่อน": "Select at least one item", "กำลังสร้างไฟล์…": "Creating file…", "สร้างไฟล์แล้ว: ": "File created: ", "สร้างไฟล์ไม่สำเร็จ: ": "Could not create file: ", "GSA02 QA/QC – รายงานปัญหาหน้างาน": "GSA02 QA/QC – Site Issue Report", "วันที่แจ้ง": "Date reported","ล้างประวัติ": "Clear history", "ยืนยันครั้งที่ 1: ลบประวัติทั้งหมด?": "Confirm 1: delete all history?", "ล้างประวัติแล้ว": "History cleared","รูปถ่าย": "Photos", "ไฟล์อ้างอิง": "Reference files", "ยังไม่มีรูป – แนบรูปในข้อ 6 หรือปักหมุดบนแบบในข้อ 2 แล้วกดสร้างใหม่": "No images yet – attach photos in item 6 or pin on a drawing in item 2, then create again","GSA02 QA/QC – แจ้งปัญหาหน้างาน": "GSA02 QA/QC – Site Issue Report", "แจ้งปัญหา": "Report", "แบบแปลน": "Drawings", "ประวัติ": "History", "ตั้งค่า": "Settings", "แบบแปลน · ปักหมุดตำแหน่ง": "Drawing · Pin location", "– เลือกแบบ (เพิ่มได้ที่แท็บ แบบแปลน) –": "– Select drawing (add in the Drawings tab) –", "แตะบนแบบเพื่อปักหมุด · สองนิ้วเพื่อซูม · ลากเพื่อเลื่อน · Grid ในข้อ 3 จะเติมให้เอง": "Tap the drawing to drop a pin · pinch to zoom · drag to pan · the grid in item 3 fills in automatically", "Grid (เติมอัตโนมัติจากหมุดในข้อ 2 แก้ไขได้)": "Grid (auto-filled from the pin in item 2, editable)", "อ้างอิง Spec / แบบ": "Spec / drawing reference", "แนบรูปถ่าย": "Attach photos", "แนบไฟล์อ้างอิง (PDF / รูป)": "Attach reference files (PDF / image)", "กระทบ Redundancy path (2N / N+1) – ต้องให้ CxA ตรวจปิด": "Affects a redundancy path (2N / N+1) – CxA must verify close-out", "วันที่แล้วเสร็จ": "Target completion date", "ผู้รับผิดชอบ": "Responsible party", "ข้อความสำหรับ LINE": "Message for LINE", "แชร์ไป LINE (รูป+ข้อความ)": "Share to LINE (photos + text)", "คัดลอกข้อความ": "Copy text", "ส่งเฉพาะข้อความ": "Send text only", "บันทึกรูปแบบปักหมุด": "Save pinned drawing", "บางเครื่อง LINE จะรับเฉพาะรูปเมื่อแชร์พร้อมกัน ข้อความถูกคัดลอกไว้แล้ว วางต่อในแชตได้เลย": "On some phones LINE keeps only the images when both are shared. The text is already copied, so paste it into the chat.", "เพิ่มแบบแปลน": "Add a drawing", "เลือกไฟล์ PDF หรือรูปจากเครื่อง หรือจาก Google Drive (ในหน้าต่างเลือกไฟล์ของมือถือ) ระบบเก็บไว้ในเครื่องนี้ เปิดใช้ได้แม้ไม่มีเน็ต": "Pick a PDF or image from this device or from Google Drive (in the phone's file picker). Drawings are stored on this device and work offline.", "ไฟล์แบบ (PDF / JPG / PNG)": "Drawing file (PDF / JPG / PNG)", "หน้า PDF": "PDF page", "ชื่อแบบ": "Drawing name", "เพิ่มแบบ": "Add drawing", "ตั้งค่า Grid ของแบบ:": "Grid setup for:", "Grid แนวตั้ง (ซ้าย→ขวา)": "Vertical grids (left → right)", "Grid แนวนอน (บน→ล่าง)": "Horizontal grids (top → bottom)", "กดเริ่ม แล้วแตะจุดตัด Grid แรก (เช่น A/1) และจุดตัดสุดท้าย (เช่น F/6) บนแบบ · อาคาร 01 และ 02 ใส่ Grid พร้อมระยะ (เมตร) จาก Site Plan ไว้ให้แล้ว ถ้าแกนในแบบกลับด้านให้กด สลับแกน · รูปแบบ: ชื่อ:ระยะ เช่น A:0,B:8.4 หรือแค่ A,B,C ถ้าระยะเท่ากัน": "Press Start, then tap the first grid intersection (e.g. A/1) and the last one (e.g. F/6) on the drawing · Buildings 01 and 02 already have grids with spacing (m) from the Site Plan; if the axes are flipped on the drawing, press Swap axes · Format: name:distance, e.g. A:0,B:8.4, or just A,B,C for equal spacing", "เริ่มแตะจุดตัด": "Start tapping intersections", "สลับแกน": "Swap axes", "บันทึก Grid": "Save grid", "แบบในเครื่อง": "Drawings on this device", "ยังไม่มีแบบ": "No drawings yet", "รายการที่แจ้งจากเครื่องนี้": "Issues reported from this device", "Export CSV (สำหรับ Procore)": "Export CSV (for Procore)", "ยังไม่มีรายการ": "No issues yet", "ผู้ตรวจ": "Inspector", "ชื่อผู้ตรวจ (แสดงในข้อความ \"แจ้งโดย\")": "Inspector name (shown as \"Reported by\")", "บันทึก": "Save", "สำรอง / ย้ายเครื่อง": "Backup / changing devices", "แบบและ Grid เก็บในเบราว์เซอร์ของเครื่องนี้ ถ้าล้างข้อมูลเบราว์เซอร์ต้องเพิ่มแบบใหม่ ไฟล์ต้นฉบับควรอยู่ใน Google Drive ของโครงการ": "Drawings and grids are stored in this browser. Clearing browser data removes them, so keep the original files in the project Google Drive.", "ล้างฟอร์มปัจจุบัน": "Clear current form", "ล้างฟอร์ม": "Clear form", "สร้างข้อความ + รูป": "Create message + image", "เช่น L1-105": "e.g. L1-105", "เช่น UPS Room 1-A": "e.g. UPS Room 1-A", "เช่น 1-6 ~ 1-7 / 1-C": "e.g. 1-6 ~ 1-7 / 1-C", "พบอะไร ผิดจาก spec / แบบอย่างไร": "What was found and how it deviates from the spec / drawing", "เช่น Spec 26 05 36 · E-301": "e.g. Spec 26 05 36 · E-301", "พิมพ์ชื่อผู้รับผิดชอบ / ผู้รับเหมา": "Type the responsible person / contractor", "ซูมเข้า": "Zoom in", "ซูมออก": "Zoom out", "พอดีจอ": "Fit to screen", "นอก ": "outside ", "โหลดตัวอ่าน PDF ไม่ได้ (ต้องต่อเน็ตครั้งแรก) ลองแปลงแบบเป็น JPG/PNG": "Could not load the PDF reader (needs internet the first time). Try converting the drawing to JPG/PNG.", "ผู้ตรวจ: ": "Inspector: ", "– (ตั้งค่าในแท็บ ตั้งค่า)": "– (set in the Settings tab)", "แตะจุดตัด Grid สุดท้าย (ขวาล่าง เช่น F/6)": "Tap the last grid intersection (bottom right, e.g. F/6)", "ได้ 2 จุดแล้ว กด บันทึก Grid": "Got 2 points. Press Save grid", "แตะจุดตัด Grid แรก (ซ้ายบน เช่น A/1) ซูมเข้าให้แม่นก่อนแตะ": "Tap the first grid intersection (top left, e.g. A/1). Zoom in first for accuracy", "ยังแตะจุดตัดไม่ครบ 2 จุด": "Tap both intersections first", "บันทึก Grid แล้ว": "Grid saved", "เลือกไฟล์แบบก่อน": "Choose a drawing file first", "กำลังโหลดแบบ…": "Loading drawing…", "เพิ่มแบบแล้ว ตั้งค่า Grid ต่อได้เลย": "Drawing added. Set up its grid next", "ยังไม่ตั้ง Grid": "no grid yet", "ลบ": "Delete", "ยืนยัน?": "Confirm?", "ปักหมุดแล้ว (แบบนี้ยังไม่ตั้ง Grid กรอกเองได้)": "Pinned (this drawing has no grid; type it in manually)", "แตะตำแหน่งที่พบปัญหา": "Tap where the issue is", "แบบนี้ยังไม่ตั้ง Grid – ปักหมุดได้ แต่ต้องกรอก Grid เอง": "This drawing has no grid set up – you can pin, but type the grid manually", "ประเภท Issue": "Issue type", "ความรุนแรง": "Severity", "กำลังสร้าง…": "Creating…", "คัดลอกข้อความแล้ว": "Text copied", "คัดลอกไม่ได้ กดค้างที่ข้อความเพื่อคัดลอก": "Could not copy. Long-press the text to copy it", "ข้อความถูกคัดลอกไว้แล้ว ถ้า LINE ไม่แสดงข้อความ ให้วางในแชต": "Text is copied. If LINE does not show it, paste it into the chat", "เครื่องนี้แชร์รูปตรงไม่ได้ – ส่งข้อความแล้วแนบรูปจากที่บันทึกไว้": "This device cannot share images directly – send the text, then attach the saved images", "คัดลอก": "Copy", "คัดลอกแล้ว": "Copied", "คัดลอกไม่ได้": "Could not copy", "บันทึกแล้ว": "Saved", "เบราว์เซอร์นี้เก็บข้อมูลถาวรไม่ได้ – แบบจะหายเมื่อปิดหน้า": "This browser cannot store data – drawings will be lost when the page closes", "แบบปักหมุด": "Pinned drawing", "เครื่องนี้แชร์ PDF ไม่ได้ – ส่งไฟล์อ้างอิงแยกใน LINE": "This device cannot share PDFs – send the reference files separately in LINE", "เพิ่มแบบไม่สำเร็จ: ": "Could not add drawing: ", "ยังไม่ได้กรอก: ": "Missing: ", "สร้างไม่สำเร็จ: ": "Could not create: ", "แชร์ไม่สำเร็จ: ": "Share failed: ", "ลบไฟล์": "Remove file", "รูป": "Photo", "ลบรูป": "Remove photo", "แบบ": "drawing", "แจ้งโดย": "Reported by"};
+let LANG=(()=>{try{return localStorage.getItem('qc.lang')||'th'}catch(e){return 'th'}})();
+const T=s=>LANG==='en'?(DICT[s]??s):s;
+const ATTRS=['placeholder','aria-label','alt'];
+function applyLang(){
+  document.documentElement.lang=LANG;document.title=T('GSA02 QA/QC – แจ้งปัญหาหน้างาน');
+  const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement.closest('script,style,#outMsg')?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
+  let n;while((n=w.nextNode())){if(n.__k===undefined){const k=n.nodeValue.trim();n.__k=DICT[k]!==undefined?k:null}if(n.__k)n.nodeValue=n.nodeValue.replace(n.nodeValue.trim(),T(n.__k))}
+  document.querySelectorAll('[placeholder],[aria-label],[alt]').forEach(el=>{el.__k=el.__k||{};ATTRS.forEach(a=>{if(!el.hasAttribute(a))return;if(el.__k[a]===undefined){const v=el.getAttribute(a);el.__k[a]=DICT[v]!==undefined?v:null}if(el.__k[a])el.setAttribute(a,T(el.__k[a]))})});
+  $('#langBtn').textContent=LANG==='en'?'ไทย':'EN';
+}
+/* ===== helpers ===== */
+const $=s=>document.querySelector(s);
+const toast=(t,ms=2600)=>{const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',ms)};
+const ls={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function chips(el,items,multi,onChange,useLabel){
+  el.innerHTML='';
+  items.forEach(it=>{const [v,t]=Array.isArray(it)?it:[it,it];const b=document.createElement('button');b.type='button';b.dataset.v=v;b.textContent=Array.isArray(it)&&!useLabel?v:t;b.title=t;
+    b.onclick=()=>{[...el.children].forEach(c=>c.classList.toggle('on',c===b));onChange&&onChange(v)};el.appendChild(b)});
+  return {get:()=>el.querySelector('.on')?.dataset.v||'',set:v=>[...el.children].forEach(c=>c.classList.toggle('on',c.dataset.v===v))};
+}
+function fillSel(el,items,first){el.innerHTML=(first?`<option value="">${first}</option>`:'')+items.map(i=>`<option>${esc(i)}</option>`).join('')}
+
+/* ===== IndexedDB ===== */
+let DB=null;
+function idb(){return new Promise((res)=>{try{const r=indexedDB.open('gsa02qc',1);r.onupgradeneeded=()=>{const d=r.result;d.createObjectStore('dwg',{keyPath:'id'});d.createObjectStore('log',{keyPath:'id'})};r.onsuccess=()=>{DB=r.result;res(DB)};r.onerror=()=>res(null)}catch(e){res(null)}})}
+const mem={dwg:new Map(),log:new Map()};
+function put(store,v){mem[store].set(v.id,v);if(!DB)return Promise.resolve();return new Promise((r,j)=>{try{const t=DB.transaction(store,'readwrite');t.objectStore(store).put(v);t.oncomplete=()=>r();t.onerror=t.onabort=()=>j(new Error((t.error&&t.error.name==='QuotaExceededError')?T('พื้นที่เก็บข้อมูลในเครื่องเต็ม – ล้างประวัติหรือลบแบบที่ไม่ใช้'):T('บันทึกลงเครื่องไม่สำเร็จ')+' ('+(t.error&&t.error.name||'error')+')'))}catch(e){j(e)}})}
+function del(store,id){mem[store].delete(id);if(!DB)return Promise.resolve();return new Promise(r=>{const t=DB.transaction(store,'readwrite');t.objectStore(store).delete(id);t.oncomplete=r;t.onerror=r})}
+function all(store){if(!DB)return Promise.resolve([...mem[store].values()]);return new Promise(r=>{const q=DB.transaction(store).objectStore(store).getAll();q.onsuccess=()=>{q.result.forEach(v=>mem[store].set(v.id,v));r(q.result)};q.onerror=()=>r([...mem[store].values()])})}
+
+/* ===== Viewer (pan / pinch / tap) ===== */
+function Viewer(box,onTap){
+  const stage=document.createElement('div');stage.className='stage';const img=document.createElement('img');stage.appendChild(img);box.appendChild(stage);
+  let W=0,H=0,s=1,tx=0,ty=0,marks=[];const ptr=new Map();let g=null;
+  const msg=box.querySelector('.vmsg');
+  function apply(){stage.style.transform=`translate(${tx}px,${ty}px) scale(${s})`;marks.forEach(m=>{m.el.style.left=(tx+m.x*W*s)+'px';m.el.style.top=(ty+m.y*H*s)+'px'})}
+  function fit(){const bw=box.clientWidth,bh=box.clientHeight;if(!W)return;s=Math.min(bw/W,bh/H);tx=(bw-W*s)/2;ty=(bh-H*s)/2;apply()}
+  function zoomAt(f,cx,cy){const ns=Math.max(0.02,Math.min(8,s*f));tx=cx-(cx-tx)*(ns/s);ty=cy-(cy-ty)*(ns/s);s=ns;apply()}
+  const pos=e=>{const r=box.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
+  box.addEventListener('pointerdown',e=>{if(e.target.closest('.vtools'))return;box.setPointerCapture(e.pointerId);ptr.set(e.pointerId,pos(e));
+    if(ptr.size===1){const p=pos(e);g={mode:'pan',x0:p.x,y0:p.y,tx0:tx,ty0:ty,t0:Date.now(),moved:false}}
+    else if(ptr.size===2){const [a,b]=[...ptr.values()];g={mode:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y),m0:{x:(a.x+b.x)/2,y:(a.y+b.y)/2},s0:s,tx0:tx,ty0:ty,moved:true}}});
+  box.addEventListener('pointermove',e=>{if(!ptr.has(e.pointerId)||!g)return;ptr.set(e.pointerId,pos(e));
+    if(g.mode==='pan'&&ptr.size===1){const p=pos(e);const dx=p.x-g.x0,dy=p.y-g.y0;if(Math.hypot(dx,dy)>8)g.moved=true;if(g.moved){tx=g.tx0+dx;ty=g.ty0+dy;apply()}}
+    else if(g.mode==='pinch'&&ptr.size===2){const [a,b]=[...ptr.values()];const d=Math.hypot(a.x-b.x,a.y-b.y);const m={x:(a.x+b.x)/2,y:(a.y+b.y)/2};const ns=Math.max(0.02,Math.min(8,g.s0*d/g.d0));tx=m.x-(g.m0.x-g.tx0)*(ns/g.s0);ty=m.y-(g.m0.y-g.ty0)*(ns/g.s0);s=ns;apply()}});
+  const up=e=>{if(!ptr.has(e.pointerId))return;const p=pos(e);ptr.delete(e.pointerId);
+    if(g&&g.mode==='pan'&&!g.moved&&Date.now()-g.t0<600&&W){const x=(p.x-tx)/s/W,y=(p.y-ty)/s/H;if(x>=0&&x<=1&&y>=0&&y<=1)onTap(x,y)}
+    if(ptr.size===0)g=null;else if(ptr.size===1){const q=[...ptr.values()][0];g={mode:'pan',x0:q.x,y0:q.y,tx0:tx,ty0:ty,t0:0,moved:true}}};
+  box.addEventListener('pointerup',up);box.addEventListener('pointercancel',up);
+  box.addEventListener('wheel',e=>{e.preventDefault();const p=pos(e);zoomAt(e.deltaY<0?1.15:0.87,p.x,p.y)},{passive:false});
+  box.querySelectorAll('.vtools button').forEach(b=>b.onclick=()=>{const z=b.dataset.z;if(z==='fit')fit();else zoomAt(+z,box.clientWidth/2,box.clientHeight/2)});
+  return{
+    load(url,w,h){return new Promise(r=>{img.onload=()=>{W=w||img.naturalWidth;H=h||img.naturalHeight;img.style.width=W+'px';img.style.height=H+'px';fit();r()};img.src=url})},
+    marks(list){marks.forEach(m=>m.el.remove());marks=list.map(m=>{const el=document.createElement('div');el.className='mk'+(m.cal?' cal':'');
+      el.innerHTML=m.cal?esc(m.label):'<svg width="30" height="38" viewBox="0 0 24 30" aria-hidden="true"><path d="M12 29s-10-9-10-16a10 10 0 0120 0c0 7-10 16-10 16z" fill="#B4530A" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="#fff"/></svg>';box.appendChild(el);return{...m,el}});apply()},
+    say(t){msg.textContent=t||'';msg.style.display=t?'block':'none'},
+    fit,get size(){return{W,H}}
+  };
+}
+
+/* ===== Grid math ===== */
+function parseAxis(str){ // "A,B,C" or "A:0,B:8.4"
+  const parts=str.split(',').map(s=>s.trim()).filter(Boolean);
+  const hasPos=parts.every(p=>p.includes(':'));
+  const lab=parts.map(p=>p.split(':')[0].trim());
+  let pos=hasPos?parts.map(p=>parseFloat(p.split(':')[1])):lab.map((_,i)=>i);
+  const a=pos[0],b=pos[pos.length-1];pos=pos.map(v=>b===a?0:(v-a)/(b-a));
+  return{lab,pos};
+}
+function axisLabel(t,ax){ // t normalized 0..1 between first & last grid
+  const {lab,pos}=ax;if(lab.length<2)return lab[0]||'';
+  const tol=0.12/(lab.length-1);
+  for(let i=0;i<pos.length;i++)if(Math.abs(t-pos[i])<=tol)return lab[i];
+  if(t<pos[0])return T('นอก ')+lab[0];if(t>pos[pos.length-1])return T('นอก ')+lab[lab.length-1];
+  const sep=lab.some(l=>l.includes('-'))?' ~ ':'–';for(let i=0;i<pos.length-1;i++)if(t>pos[i]&&t<pos[i+1])return `${lab[i]}${sep}${lab[i+1]}`;
+  return '';
+}
+function gridFor(d,x,y){
+  const c=d&&d.cal;if(!c||!c.p1||!c.p2)return '';
+  const tx=(x-c.p1.x)/(c.p2.x-c.p1.x),ty=(y-c.p1.y)/(c.p2.y-c.p1.y);
+  return `${axisLabel(tx,parseAxis(c.cols))} / ${axisLabel(ty,parseAxis(c.rows))}`;
+}
+
+/* ===== Image utils ===== */
+function loadImg(src){return new Promise((r,j)=>{const i=new Image();i.onload=()=>r(i);i.onerror=j;i.src=src})}
+function toBlob(cv,type='image/jpeg',q=0.88){return new Promise((r,j)=>cv.toBlob(b=>b?r(b):j(new Error(T('ภาพใหญ่เกินกว่าที่เครื่องนี้รองรับ'))),type,q))}
+const MAXPX=10e6,MAXDIM=4096; /* iPhone/iPad จำกัดขนาด canvas */
+const fitScale=(w,h)=>Math.min(1,MAXDIM/Math.max(w,h),Math.sqrt(MAXPX/(w*h)));
+async function resizeFile(file,max=1600){const url=URL.createObjectURL(file);try{const im=await loadImg(url);const k=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight));const cv=document.createElement('canvas');cv.width=Math.round(im.naturalWidth*k);cv.height=Math.round(im.naturalHeight*k);cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);return await toBlob(cv)}finally{URL.revokeObjectURL(url)}}
+async function pdfToBlob(file,page){
+  if(!window.pdfjsLib)throw new Error(T('โหลดตัวอ่าน PDF ไม่ได้ (ต้องต่อเน็ตครั้งแรก) ลองแปลงแบบเป็น JPG/PNG'));
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+  const pg=await pdf.getPage(Math.min(Math.max(1,page),pdf.numPages));
+  const v1=pg.getViewport({scale:1});const scale=Math.min(4,MAXDIM/Math.max(v1.width,v1.height),Math.sqrt(MAXPX/(v1.width*v1.height)));
+  const vp=pg.getViewport({scale});const cv=document.createElement('canvas');cv.width=Math.floor(vp.width);cv.height=Math.floor(vp.height);
+  const ctx=cv.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);
+  await pg.render({canvasContext:ctx,viewport:vp}).promise;return{blob:await toBlob(cv,'image/jpeg',0.9),w:cv.width,h:cv.height,pages:pdf.numPages};
+}
+async function thumbOf(blob,max=320){const u=URL.createObjectURL(blob);try{const im=await loadImg(u);const k=max/Math.max(im.naturalWidth,im.naturalHeight);const cv=document.createElement('canvas');cv.width=im.naturalWidth*k;cv.height=im.naturalHeight*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);return cv.toDataURL('image/jpeg',0.7)}finally{URL.revokeObjectURL(u)}}
+
+/* ===== State ===== */
+const st={pin:null,photos:[],refs:[],dwgId:'',out:null};
+const S=()=>ls.get('qc.settings',{name:'',code:'',seq:1});
+let cB,cD,cT,cS;
+
+function nextId(){const n=new Date(),p=v=>String(v).padStart(2,'0');return `${PROJECT}_${cD.get()||'GEN'}_${n.getFullYear()}${p(n.getMonth()+1)}${p(n.getDate())}-${p(n.getHours())}${p(n.getMinutes())}${p(n.getSeconds())}`} /* ใช้ตั้งชื่อไฟล์เท่านั้น ไม่ใช่เลขเอกสาร */
+function refreshId(){const s=S();$('#who').textContent=T('ผู้ตรวจ: ')+(s.name||T('– (ตั้งค่าในแท็บ ตั้งค่า)'))}
+
+/* ===== Tabs ===== */
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id===b.dataset.tab));$('#bar').style.display=b.dataset.tab==='form'?'block':'none';
+  if(b.dataset.tab==='form'&&st.dwgId)setTimeout(()=>vForm.fit(),30);if(b.dataset.tab==='log')renderLog();if(b.dataset.tab==='dwg')renderDwgList()});
+
+/* ===== Drawings tab ===== */
+let calDwg=null,calStep=0,calTmp={};
+const vCal=Viewer($('#vCal'),(x,y)=>{if(!calStep)return;
+  if(calStep===1){calTmp.p1={x,y};calStep=2;vCal.say(T('แตะจุดตัด Grid สุดท้าย (ขวาล่าง เช่น F/6)'))}
+  else if(calStep===2){calTmp.p2={x,y};calStep=0;vCal.say('');toast(T('ได้ 2 จุดแล้ว กด บันทึก Grid'))}
+  drawCalMarks()});
+function drawCalMarks(){const c=parseAxis($('#calCols').value),r=parseAxis($('#calRows').value);const m=[];
+  if(calTmp.p1)m.push({x:calTmp.p1.x,y:calTmp.p1.y,cal:1,label:(c.lab[0]||'')+(r.lab[0]||'')});
+  if(calTmp.p2)m.push({x:calTmp.p2.x,y:calTmp.p2.y,cal:1,label:(c.lab.at(-1)||'')+(r.lab.at(-1)||'')});
+  if(calTmp.p1&&calTmp.p2){c.pos.forEach((px,i)=>{if(i&&i<c.pos.length-1)m.push({x:calTmp.p1.x+px*(calTmp.p2.x-calTmp.p1.x),y:calTmp.p1.y,cal:1,label:c.lab[i]})});
+    r.pos.forEach((py,i)=>{if(i&&i<r.pos.length-1)m.push({x:calTmp.p1.x,y:calTmp.p1.y+py*(calTmp.p2.y-calTmp.p1.y),cal:1,label:r.lab[i]})})}
+  vCal.marks(m)}
+$('#calCols').oninput=$('#calRows').oninput=drawCalMarks;
+$('#calStart').onclick=()=>{calStep=1;calTmp={};drawCalMarks();vCal.say(T('แตะจุดตัด Grid แรก (ซ้ายบน เช่น A/1) ซูมเข้าให้แม่นก่อนแตะ'))};
+$('#calSave').onclick=async()=>{if(!calDwg)return;if(!calTmp.p1||!calTmp.p2)return toast(T('ยังแตะจุดตัดไม่ครบ 2 จุด'));
+  calDwg.cal={cols:$('#calCols').value,rows:$('#calRows').value,p1:calTmp.p1,p2:calTmp.p2};await put('dwg',calDwg);toast(T('บันทึก Grid แล้ว'));renderDwgList();fillDwgSelect()};
+async function openCal(d){calDwg=d;calStep=0;calTmp=d.cal?{p1:d.cal.p1,p2:d.cal.p2}:{};const pre=BLDG[d.building]||{};$('#calCols').value=d.cal?.cols||(pre.a||'A,B,C,D,E,F');$('#calRows').value=d.cal?.rows||pre.b||'1,2,3,4,5,6';
+  $('#calName').textContent=d.name;$('#calCard').style.display='block';await vCal.load(URL.createObjectURL(d.blob),d.w,d.h);drawCalMarks();$('#calCard').scrollIntoView({behavior:'smooth'})}
+$('#dAdd').onclick=async()=>{const f=$('#dFile').files[0];if(!f)return toast(T('เลือกไฟล์แบบก่อน'));const btn=$('#dAdd');btn.disabled=true;btn.textContent=T('กำลังโหลดแบบ…');
+  try{let r;if(f.type==='application/pdf'||/\.pdf$/i.test(f.name))r=await pdfToBlob(f,+$('#dPage').value||1);else{const u=URL.createObjectURL(f);let im;try{im=await loadImg(u)}catch(e){URL.revokeObjectURL(u);throw new Error(T('เปิดไฟล์รูปนี้ไม่ได้ (ถ้าเป็น HEIC ให้แปลงเป็น JPG)'))}const k=fitScale(im.naturalWidth,im.naturalHeight);
+      if(k<1){const cv=document.createElement('canvas');cv.width=Math.floor(im.naturalWidth*k);cv.height=Math.floor(im.naturalHeight*k);const cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,cv.width,cv.height);cx.drawImage(im,0,0,cv.width,cv.height);r={blob:await toBlob(cv,'image/jpeg',0.9),w:cv.width,h:cv.height}}else r={blob:f,w:im.naturalWidth,h:im.naturalHeight};URL.revokeObjectURL(u)}
+    const d={id:'d'+Date.now(),name:$('#dName').value.trim()||f.name.replace(/\.[^.]+$/,''),building:$('#dBld').value,floor:$('#dFlr').value,blob:r.blob,w:r.w,h:r.h,thumb:await thumbOf(r.blob),cal:null};
+    await put('dwg',d);$('#dFile').value='';$('#dName').value='';toast(T('เพิ่มแบบแล้ว ตั้งค่า Grid ต่อได้เลย'));renderDwgList();fillDwgSelect();openCal(d)}
+  catch(e){toast(T('เพิ่มแบบไม่สำเร็จ: ')+e.message,4000)}finally{btn.disabled=false;btn.textContent=T('เพิ่มแบบ')}};
+async function renderDwgList(){const ds=await all('dwg');const el=$('#dList');if(!ds.length){el.innerHTML='<p class="hint">'+T('ยังไม่มีแบบ')+'</p>';return}
+  el.innerHTML='';ds.forEach(d=>{const it=document.createElement('div');it.className='it';it.innerHTML=`<img src="${d.thumb}" alt=""><div><b>${esc(d.name)}</b><span>${esc(d.building)} · ${esc(d.floor)} · ${d.cal?'Grid ✓':T('ยังไม่ตั้ง Grid')}</span></div>`;
+    const g=document.createElement('button');g.className='btn sm sec';g.textContent='Grid';g.onclick=()=>openCal(d);
+    const x=document.createElement('button');x.className='btn sm sec';x.textContent=T('ลบ');x.onclick=async()=>{x.textContent===T('ยืนยัน?')?(await del('dwg',d.id),renderDwgList(),fillDwgSelect()):(x.textContent=T('ยืนยัน?'))};
+    it.append(g,x);el.appendChild(it)})}
+
+/* ===== Form ===== */
+const vForm=Viewer($('#vForm'),(x,y)=>{st.pin={x,y};vForm.marks([{x,y}]);const d=mem.dwg.get(st.dwgId);const g=gridFor(d,x,y);
+  if(g){$('#fGrid').value=g;vForm.say('Grid: '+g)}else vForm.say(T('ปักหมุดแล้ว (แบบนี้ยังไม่ตั้ง Grid กรอกเองได้)'))});
+async function fillDwgSelect(){const ds=await all('dwg');const b=cB.get(),f=$('#fFloor').value;
+  const sorted=ds.sort((a,z)=>((z.building===b)+(z.floor===f))-((a.building===b)+(a.floor===f)));
+  $('#fDwg').innerHTML='<option value="">'+T('– เลือกแบบ (เพิ่มได้ที่แท็บ แบบแปลน) –')+'</option>'+sorted.map(d=>`<option value="${d.id}">${esc(d.name)} · ${esc(d.building)} ${esc(d.floor)}</option>`).join('');
+  $('#fDwg').value=mem.dwg.has(st.dwgId)?st.dwgId:''}
+$('#fDwg').onchange=async e=>{st.dwgId=e.target.value;st.pin=null;const d=mem.dwg.get(st.dwgId);$('#vForm').style.display=d?'block':'none';if(!d)return;
+  await vForm.load(URL.createObjectURL(d.blob),d.w,d.h);vForm.marks([]);vForm.say(d.cal?T('แตะตำแหน่งที่พบปัญหา'):T('แบบนี้ยังไม่ตั้ง Grid – ปักหมุดได้ แต่ต้องกรอก Grid เอง'));
+  if(!$('#fRef').value)$('#fRef').value=d.name;if(d.building){cB.set(d.building);fillSel($('#fFloor'),floorsOf(d.building))}if(d.floor)$('#fFloor').value=d.floor};
+$('#fPhotos').onchange=async e=>{for(const f of e.target.files){st.photos.push(await resizeFile(f))}e.target.value='';renderPhotos();renderOut()};
+$('#fRefFile').onchange=e=>{for(const f of e.target.files)st.refs.push(f);e.target.value='';renderRefs();renderOut()};
+function renderRefs(){const el=$('#refList');el.innerHTML='';st.refs.forEach((f,i)=>{const d=document.createElement('div');d.innerHTML=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5A6270" stroke-width="2" aria-hidden="true"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/></svg><span>${esc(f.name)} · ${(f.size/1048576).toFixed(1)} MB</span><button aria-label="${T('ลบไฟล์')} ${i+1}">×</button>`;d.querySelector('button').onclick=()=>{st.refs.splice(i,1);renderRefs();renderOut()};el.appendChild(d)})}
+function renderPhotos(){const el=$('#photoList');el.innerHTML='';st.photos.forEach((b,i)=>{const d=document.createElement('div');d.innerHTML=`<img src="${URL.createObjectURL(b)}" alt="${T('รูป')} ${i+1}"><button aria-label="${T('ลบรูป')} ${i+1}">×</button>`;d.querySelector('button').onclick=()=>{st.photos.splice(i,1);renderPhotos();renderOut()};el.appendChild(d)})}
+
+function fmtDate(v){if(!v)return '';const [y,m,d]=v.split('-');const th=LANG==='en'?['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']:['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];return `${+d} ${th[m-1]} ${y}`}
+function collect(){return{id:nextId(),building:cB.get(),floor:$('#fFloor').value,roomNo:$('#fRoomNo').value.trim(),room:$('#fRoom').value.trim(),grid:$('#fGrid').value.trim(),
+  disc:cD.get(),discName:(DISC.find(x=>x[0]===cD.get())||[])[1]||'',check:$('#fCheck').value,problem:$('#fProblem').value.trim(),ref:$('#fRef').value.trim(),
+  type:cT.get(),typeName:(TYPES.find(x=>x[0]===cT.get())||[])[1]||'',sev:cS.get(),red:$('#fRed').checked,due:$('#fDue').value,owner:$('#fOwner').value.trim(),
+  dwg:mem.dwg.get(st.dwgId)?.name||'',pin:st.pin,by:S().name,at:new Date().toISOString(),nPhotos:st.photos.length,nRefs:st.refs.length,refNames:st.refs.map(f=>f.name).join('; ')}}
+function buildMsg(r){const sevIcon={Critical:'🔴',Major:'🟠',Minor:'🟡'}[r.sev]||'⚪';
+  return `${sevIcon} ${r.typeName} – ${r.sev} | ${r.discName}${r.red?' | ⚠ Redundancy':''}
+1. Building: ${r.building}
+2. Location: ${[r.floor,r.room,r.roomNo&&'('+r.roomNo+')'].filter(Boolean).join(' / ')}
+3. Grid: ${r.grid||'-'}${r.dwg?' ('+T('แบบ')+' '+r.dwg+')':''}
+4. Discipline: ${r.discName}
+5. Check: ${r.check}
+6. Problem: ${r.problem}${r.ref||r.nRefs?'\n   Ref: '+[r.ref,r.nRefs?(LANG==='en'?'📎 '+r.nRefs+' attachment(s)':'📎 ไฟล์แนบ '+r.nRefs+' ไฟล์'):''].filter(Boolean).join(' · '):''}
+7. Issue: ${r.typeName} – ${r.sev}
+8. Plan complete: ${fmtDate(r.due)||'-'}${r.owner?' – '+r.owner:''}
+📷 ${LANG==='en'?r.nPhotos+' photo(s)':'รูป '+r.nPhotos+' รูป'}${r.pin?' + 📍 '+T('แบบปักหมุด'):''}
+${T('แจ้งโดย')}: ${r.by||'-'}`}
+
+async function pinImage(r){const d=mem.dwg.get(st.dwgId);if(!d||!st.pin)return null;const u=URL.createObjectURL(d.blob);
+  try{const im=await loadImg(u);const W=im.naturalWidth,H=im.naturalHeight;const px=st.pin.x*W,py=st.pin.y*H;
+    let cw=Math.min(W,Math.max(900,W*0.3)),ch=Math.min(H,cw*0.7);let sx=Math.max(0,Math.min(W-cw,px-cw/2)),sy=Math.max(0,Math.min(H-ch,py-ch/2));
+    const OW=1400,k=OW/cw,band=90,OH=Math.round(ch*k)+band;const cv=document.createElement('canvas');cv.width=OW;cv.height=OH;const c=cv.getContext('2d');
+    c.fillStyle='#fff';c.fillRect(0,0,OW,OH);c.drawImage(im,sx,sy,cw,ch,0,band,OW,ch*k);
+    const mx=(px-sx)*k,my=(py-sy)*k+band;c.fillStyle='rgba(180,83,10,.18)';c.beginPath();c.arc(mx,my,70,0,7);c.fill();c.strokeStyle='#B4530A';c.lineWidth=6;c.beginPath();c.arc(mx,my,70,0,7);c.stroke();
+    c.fillStyle='#B4530A';c.beginPath();c.arc(mx,my-46,22,0,7);c.fill();c.beginPath();c.moveTo(mx-20,my-38);c.lineTo(mx,my);c.lineTo(mx+20,my-38);c.fill();c.fillStyle='#fff';c.beginPath();c.arc(mx,my-46,8,0,7);c.fill();
+    // inset overview
+    const iw=300,ih=Math.round(300*H/W);const ix=OW-iw-16,iy=OH-ih-16;c.fillStyle='#fff';c.fillRect(ix-4,iy-4,iw+8,ih+8);c.strokeStyle='#4A5260';c.lineWidth=2;c.strokeRect(ix-4,iy-4,iw+8,ih+8);
+    c.drawImage(im,ix,iy,iw,ih);c.strokeStyle='#B4530A';c.lineWidth=3;c.strokeRect(ix+sx/W*iw,iy+sy/H*ih,cw/W*iw,ch/H*ih);
+    c.fillStyle='#1F2430';c.fillRect(0,0,OW,band);c.fillStyle='#fff';c.font='700 34px "IBM Plex Sans Thai",sans-serif';c.fillText(`${r.typeName} – ${r.sev} · ${r.discName}`,24,44);
+    c.font='500 26px "IBM Plex Sans Thai",sans-serif';c.fillText(`${r.building} ${r.floor} · ${r.room||''}  |  Grid ${r.grid||'-'}  |  ${d.name}`,24,78);
+    return await toBlob(cv,'image/jpeg',0.9)}finally{URL.revokeObjectURL(u)}}
+
+$('#bGen').onclick=async()=>{const r=collect();const miss=[];if(!r.building)miss.push('Building');if(!r.disc)miss.push('Discipline');if(!r.type)miss.push(T('ประเภท Issue'));if(!r.sev)miss.push(T('ความรุนแรง'));if(!r.problem)miss.push('Problem');
+  if(miss.length)return toast(T('ยังไม่ได้กรอก: ')+miss.join(', '),3500);
+  const btn=$('#bGen');btn.disabled=true;btn.textContent=T('กำลังสร้าง…');
+  try{const pin=await pinImage(r);const msg=buildMsg(r);st.out={r,msg,pin};
+    $('#outMsg').textContent=msg;renderOut();
+    $('#bLineText').href='https://line.me/R/share?text='+encodeURIComponent(msg);$('#bDlPin').style.display=pin?'':'none';
+    $('#outCard').style.display='block';$('#outCard').scrollIntoView({behavior:'smooth'});
+    const thumb=pin?await thumbOf(pin,240):(st.photos[0]?await thumbOf(st.photos[0],240):'');
+    const lid=r.id+'_'+Date.now().toString(36);await put('log',{...r,id:lid,msg,thumb,pinBlob:pin||null,photoBlobs:[...st.photos]});st.lastLog=lid}
+  catch(e){toast(T('สร้างไม่สำเร็จ: ')+e.message,4000)}finally{btn.disabled=false;btn.textContent=T('สร้างข้อความ + รูป')}};
+
+
+function renderOut(){if(!st.out)return;const oi=$('#outImgs');oi.innerHTML='';const pin=st.out.pin;
+  const lbl=t=>{const p=document.createElement('p');p.className='outlbl';p.textContent=t;oi.appendChild(p)};
+  if(pin){lbl('📍 '+T('แบบปักหมุด'));const i=new Image();i.src=URL.createObjectURL(pin);i.alt=T('แบบปักหมุด');oi.appendChild(i)}
+  if(st.photos.length){lbl('📷 '+T('รูปถ่าย')+' ('+st.photos.length+')');const g=document.createElement('div');g.className='outgrid';st.photos.forEach((b,k)=>{const i=new Image();i.src=URL.createObjectURL(b);i.alt=T('รูป')+' '+(k+1);g.appendChild(i)});oi.appendChild(g)}
+  if(st.refs.length){lbl('📎 '+T('ไฟล์อ้างอิง')+' ('+st.refs.length+')');const f=document.createElement('div');f.className='files';st.refs.forEach(r=>{const d=document.createElement('div');const sp=document.createElement('span');sp.textContent=r.name;d.appendChild(sp);f.appendChild(d)});oi.appendChild(f)}
+  if(!pin&&!st.photos.length&&!st.refs.length){const p=document.createElement('p');p.className='hint';p.textContent=T('ยังไม่มีรูป – แนบรูปในข้อ 6 หรือปักหมุดบนแบบในข้อ 2 แล้วกดสร้างใหม่');oi.appendChild(p)}}
+async function copyText(t){try{await navigator.clipboard.writeText(t);return true}catch(e){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(_){}ta.remove();return ok}}
+$('#bCopy').onclick=async()=>{if(st.out)toast(await copyText(st.out.msg)?T('คัดลอกข้อความแล้ว'):T('คัดลอกไม่ได้ กดค้างที่ข้อความเพื่อคัดลอก'))};
+$('#bShare').onclick=async()=>{if(!st.out)return;const {r,msg,pin}=st.out;await copyText(msg);
+  const files=[];if(pin)files.push(new File([pin],`${r.id}_PIN.jpg`,{type:'image/jpeg'}));st.photos.forEach((b,i)=>files.push(new File([b],`${r.id}_${String(i+1).padStart(2,'0')}.jpg`,{type:'image/jpeg'})));let refs=st.refs.map(f=>new File([f],`${r.id}_REF_${f.name}`,{type:f.type||'application/pdf'}));if(navigator.canShare&&!navigator.canShare({files:[...files,...refs]})){refs=refs.filter(f=>f.type.startsWith('image/'));if(st.refs.length>refs.length)toast(T('เครื่องนี้แชร์ PDF ไม่ได้ – ส่งไฟล์อ้างอิงแยกใน LINE'),4000)}files.push(...refs);
+  try{if(files.length&&navigator.canShare&&navigator.canShare({files})){await navigator.share({files,text:msg,title:r.id});toast(T('ข้อความถูกคัดลอกไว้แล้ว ถ้า LINE ไม่แสดงข้อความ ให้วางในแชต'),4000)}
+    else if(navigator.share){await navigator.share({text:msg,title:r.id})}
+    else{location.href='https://line.me/R/share?text='+encodeURIComponent(msg);toast(T('เครื่องนี้แชร์รูปตรงไม่ได้ – ส่งข้อความแล้วแนบรูปจากที่บันทึกไว้'),4000)}}
+  catch(e){if(e.name!=='AbortError')toast(T('แชร์ไม่สำเร็จ: ')+e.message,4000)}};
+function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+$('#bDlPin').onclick=()=>{if(st.out?.pin)download(st.out.pin,st.out.r.id+'_PIN.jpg')};
+
+function resetForm(){cB.set('');cD.set('');cT.set('');cS.set('');['#fRoomNo','#fRoom','#fGrid','#fProblem','#fRef','#fDue','#fOwner'].forEach(s=>$(s).value='');$('#fRed').checked=false;
+  st.pin=null;st.photos=[];st.refs=[];renderRefs();st.dwgId='';st.out=null;$('#fDwg').value='';$('#vForm').style.display='none';renderPhotos();$('#outCard').style.display='none';refreshId();window.scrollTo(0,0)}
+$('#bReset').onclick=$('#sClear').onclick=resetForm;
+
+/* ===== Log ===== */
+async function renderLog(){const L=(await all('log')).sort((a,b)=>b.at.localeCompare(a.at));const el=$('#logList');if(!L.length){el.innerHTML='<p class="hint">'+T('ยังไม่มีรายการ')+'</p>';return}
+  el.innerHTML='';L.forEach(r=>{const it=document.createElement('div');it.className='it';it.innerHTML=`<input type="checkbox" class="sel" data-id="${esc(r.id)}" checked aria-label="${T('เลือก')}" style="width:22px;min-height:22px;accent-color:var(--g)">${r.thumb?`<img src="${r.thumb}" alt="">`:'<img alt="">'}<div><b>${esc(r.typeName)} – ${esc(r.sev)} · ${esc(r.discName)}</b><span>${esc(r.building)} ${esc(r.floor)} · ${esc(r.grid)} · ${new Date(r.at).toLocaleDateString(LANG==='en'?'en-GB':'th-TH')}</span></div>`;
+    const c=document.createElement('button');c.className='btn sm sec';c.textContent=T('คัดลอก');c.onclick=async()=>toast(await copyText(r.msg)?T('คัดลอกแล้ว'):T('คัดลอกไม่ได้'));it.appendChild(c);el.appendChild(it)})}
+
+/* ล้างประวัติ: ยืนยัน 2 ครั้งก่อนลบ */
+let clrStep=0,clrT=null;
+function clrReset(){clrStep=0;clearTimeout(clrT);const b=$('#bClearLog');b.textContent=T('ล้างประวัติ');b.style.background='#fff';b.style.color='#A3171B'}
+$('#bClearLog').onclick=async()=>{const L=await all('log');if(!L.length){clrReset();return toast(T('ยังไม่มีรายการ'))}
+  const b=$('#bClearLog');clearTimeout(clrT);clrT=setTimeout(clrReset,6000);
+  if(clrStep===0){clrStep=1;b.textContent=T('ยืนยันครั้งที่ 1: ลบประวัติทั้งหมด?')}
+  else if(clrStep===1){clrStep=2;b.textContent=(LANG==='en'?'Final confirm: delete '+L.length+' item(s)':'ยืนยันครั้งสุดท้าย: ลบ '+L.length+' รายการ');b.style.background='#A3171B';b.style.color='#fff'}
+  else{for(const r of L)await del('log',r.id);clrReset();renderLog();toast(T('ล้างประวัติแล้ว'))}};
+$('#bCsv').onclick=async()=>{const L=await all('log');if(!L.length)return toast(T('ยังไม่มีรายการ'));
+  const cols=[['Building','building'],['Floor','floor'],['Room','room'],['Room No','roomNo'],['Grid','grid'],['Drawing','dwg'],['Pin X','px'],['Pin Y','py'],['Discipline','discName'],['Check Classification','check'],['Problem','problem'],['Reference','ref'],['Issue Type','typeName'],['Severity','sev'],['Redundancy','red'],['Due Date','due'],['Responsible','owner'],['Raised By','by'],['Raised At','at'],['Photos','nPhotos'],['Reference Files','refNames']];
+  const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;
+  const rows=L.map(r=>cols.map(([,k])=>q(k==='px'?(r.pin?r.pin.x.toFixed(4):''):k==='py'?(r.pin?r.pin.y.toFixed(4):''):k==='red'?(r.red?'Yes':'No'):r[k])).join(','));
+  download(new Blob(['﻿'+cols.map(c=>q(c[0])).join(',')+'\n'+rows.join('\n')],{type:'text/csv'}),`${PROJECT}_QAQC_Log_${new Date().toISOString().slice(0,10)}.csv`)};
+
+
+/* ===== Export Word (.docx) / PDF – ไม่ใช้ไลบรารีภายนอก ใช้งานออฟไลน์ได้ ===== */
+const ENC=new TextEncoder();
+const CRC_T=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(u){let c=0xFFFFFFFF;for(let i=0;i<u.length;i++)c=CRC_T[(c^u[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0}
+function zipStore(files){ // files: [{name, data:Uint8Array}] – ZIP แบบไม่บีบอัด
+  const parts=[],cen=[];let off=0;
+  for(const f of files){const nm=ENC.encode(f.name),d=f.data,crc=crc32(d);
+    const h=new DataView(new ArrayBuffer(30));h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(8,0,true);h.setUint16(10,0,true);h.setUint16(12,33,true);h.setUint32(14,crc,true);h.setUint32(18,d.length,true);h.setUint32(22,d.length,true);h.setUint16(26,nm.length,true);h.setUint16(28,0,true);
+    parts.push(new Uint8Array(h.buffer),nm,d);
+    const c=new DataView(new ArrayBuffer(46));c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);c.setUint16(10,0,true);c.setUint16(12,0,true);c.setUint16(14,33,true);c.setUint32(16,crc,true);c.setUint32(20,d.length,true);c.setUint32(24,d.length,true);c.setUint16(28,nm.length,true);c.setUint32(42,off,true);
+    cen.push(new Uint8Array(c.buffer),nm);off+=30+nm.length+d.length}
+  const cs=cen.reduce((a,b)=>a+b.length,0);const e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cs,true);e.setUint32(16,off,true);
+  return new Blob([...parts,...cen,new Uint8Array(e.buffer)],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'})}
+async function imgSize(blob){try{const b=await createImageBitmap(blob);const r={w:b.width,h:b.height};b.close&&b.close();return r}catch(e){const u=URL.createObjectURL(blob);try{const i=await loadImg(u);return{w:i.naturalWidth,h:i.naturalHeight}}finally{URL.revokeObjectURL(u)}}}
+async function toJpeg(blob){if(blob.type==='image/jpeg')return blob;const u=URL.createObjectURL(blob);try{const i=await loadImg(u);const cv=document.createElement('canvas');cv.width=i.naturalWidth;cv.height=i.naturalHeight;const c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,cv.width,cv.height);c.drawImage(i,0,0);return await toBlob(cv,'image/jpeg',0.9)}finally{URL.revokeObjectURL(u)}}
+
+/* ข้อมูลแต่ละแถวในรายงาน */
+function reportRows(r){const loc=[r.floor,r.room,r.roomNo&&'('+r.roomNo+')'].filter(Boolean).join(' / ');
+  return [['1. Building',r.building],['2. Location',loc],['3. Grid',(r.grid||'-')+(r.dwg?'  ('+T('แบบ')+' '+r.dwg+')':'')],['4. Discipline',r.discName],['5. Check',r.check],
+    ['6. Problem',r.problem],['   Reference',[r.ref,r.refNames?'📎 '+r.refNames:''].filter(Boolean).join('\n')||'-'],
+    ['7. Issue',`${r.typeName} – ${r.sev}${r.red?'  |  ⚠ Redundancy (CxA close-out)':''}`],['8. Plan complete',fmtDate(r.due)||'-'],
+    [T('ผู้รับผิดชอบ'),r.owner||'-'],[T('แจ้งโดย'),r.by||'-'],[T('วันที่แจ้ง'),new Date(r.at).toLocaleString(LANG==='en'?'en-GB':'th-TH',{dateStyle:'medium',timeStyle:'short'})]]}
+const SEVC={Critical:'A3171B',Major:'B4530A',Minor:'8A6D00'};
+const repTitle=()=>T('GSA02 QA/QC – รายงานปัญหาหน้างาน');
+
+/* ---------- Word ---------- */
+const xe=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'');
+const FONT='<w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma" w:eastAsia="Tahoma"/>';
+function wRun(t,o={}){const sz=o.sz||20;const pr=`<w:rPr>${FONT}${o.b?'<w:b/><w:bCs/>':''}${o.color?`<w:color w:val="${o.color}"/>`:''}<w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/><w:lang w:bidi="th-TH"/></w:rPr>`;
+  return String(t??'').split('\n').map((l,i)=>`<w:r>${pr}${i?'<w:br/>':''}<w:t xml:space="preserve">${xe(l)}</w:t></w:r>`).join('')}
+const wP=(t,o={})=>`<w:p><w:pPr>${o.keep?'<w:keepNext/>':''}<w:spacing w:before="${o.before||0}" w:after="${o.after??60}"/>${o.shade?`<w:shd w:val="clear" w:color="auto" w:fill="${o.shade}"/>`:''}</w:pPr>${wRun(t,o)}</w:p>`;
+function wImg(rid,id,cx,cy){return `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="${id}" name="Picture ${id}"/><wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="${id}" name="image${id}.jpeg"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="${rid}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`}
+const BRD='<w:top w:val="single" w:sz="4" w:color="C9CED6"/><w:left w:val="single" w:sz="4" w:color="C9CED6"/><w:bottom w:val="single" w:sz="4" w:color="C9CED6"/><w:right w:val="single" w:sz="4" w:color="C9CED6"/><w:insideH w:val="single" w:sz="4" w:color="C9CED6"/><w:insideV w:val="single" w:sz="4" w:color="C9CED6"/>';
+async function buildDocx(list){
+  const media=[],rels=[];let body='',pid=1;const EMU=914400,MAXW=6.5*EMU;
+  async function addImg(blob,maxW,maxH){const j=await toJpeg(blob);const {w,h}=await imgSize(j);let cx=maxW,cy=Math.round(maxW*h/w);if(cy>maxH){cy=maxH;cx=Math.round(maxH*w/h)}
+    const n=media.length+1;media.push({name:`word/media/image${n}.jpeg`,data:new Uint8Array(await j.arrayBuffer())});const rid='rIdImg'+n;rels.push(`<Relationship Id="${rid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image${n}.jpeg"/>`);return wImg(rid,pid++,cx,cy)}
+  for(let k=0;k<list.length;k++){const r=list[k];
+    if(k)body+='<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
+    body+=wP(repTitle(),{sz:18,color:'5A6270',after:40});
+    body+=wP(`${r.typeName} – ${r.sev}  |  ${r.discName}`,{sz:32,b:true,color:SEVC[r.sev]||'1F2430',after:120});
+    body+=`<w:tbl><w:tblPr><w:tblW w:w="9906" w:type="dxa"/><w:tblBorders>${BRD}</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="60" w:type="dxa"/><w:left w:w="100" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="100" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid><w:gridCol w:w="2600"/><w:gridCol w:w="7306"/></w:tblGrid>`+
+      reportRows(r).map(([l,v])=>`<w:tr><w:tc><w:tcPr><w:tcW w:w="2600" w:type="dxa"/><w:shd w:val="clear" w:color="auto" w:fill="F4F5F7"/></w:tcPr>${wP(l.trim(),{b:true,after:0})}</w:tc><w:tc><w:tcPr><w:tcW w:w="7306" w:type="dxa"/></w:tcPr>${wP(v,{after:0})}</w:tc></w:tr>`).join('')+'</w:tbl>';
+    if(r.pinBlob){body+=wP('📍 '+T('แบบปักหมุด'),{b:true,keep:true,before:200,after:60});body+=`<w:p>${await addImg(r.pinBlob,MAXW,Math.round(5*EMU))}</w:p>`}
+    const ph=r.photoBlobs||[];
+    if(ph.length){body+=wP(`📷 ${T('รูปถ่าย')} (${ph.length})`,{b:true,keep:true,before:200,after:60});
+      body+=`<w:tbl><w:tblPr><w:tblW w:w="9906" w:type="dxa"/><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="4953"/><w:gridCol w:w="4953"/></w:tblGrid>`;
+      for(let i=0;i<ph.length;i+=2){body+='<w:tr><w:trPr><w:cantSplit/></w:trPr>';for(let j=i;j<i+2;j++){body+=`<w:tc><w:tcPr><w:tcW w:w="4953" w:type="dxa"/></w:tcPr>`+(ph[j]?`<w:p><w:pPr><w:jc w:val="center"/></w:pPr>${await addImg(ph[j],Math.round(3.2*EMU),Math.round(2.6*EMU))}</w:p>${wP(T('รูป')+' '+(j+1),{sz:16,color:'5A6270'})}`:'<w:p/>')+'</w:tc>'}body+='</w:tr>'}
+      body+='</w:tbl>'}
+  }
+  const doc=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><w:body>${body}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1000" w:right="1000" w:bottom="1000" w:left="1000" w:header="500" w:footer="500" w:gutter="0"/></w:sectPr></w:body></w:document>`;
+  const files=[
+    {name:'[Content_Types].xml',data:ENC.encode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpeg" ContentType="image/jpeg"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>')},
+    {name:'_rels/.rels',data:ENC.encode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>')},
+    {name:'word/document.xml',data:ENC.encode(doc)},
+    {name:'word/_rels/document.xml.rels',data:ENC.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${rels.join('')}</Relationships>`)},
+    ...media];
+  return zipStore(files)}
+
+/* ---------- PDF (วาดหน้า A4 บน canvas แล้วรวมเป็น PDF) ---------- */
+const PW=1240,PH=1754,PM=80,PCW=PW-2*PM,PFONT='"IBM Plex Sans Thai",Tahoma,"Leelawadee UI",sans-serif';
+let SEG=null;try{SEG=new Intl.Segmenter('th',{granularity:'word'})}catch(e){}
+function wrapLines(c,text,maxW){const out=[];for(const para of String(text??'').split('\n')){
+    const toks=SEG?[...SEG.segment(para)].map(s=>s.segment):para.split(/(\s+)/);let line='';
+    for(let t of toks){if(c.measureText(line+t).width<=maxW){line+=t;continue}
+      if(line.trim()){out.push(line.trimEnd());line=''}t=t.replace(/^\s+/,'');
+      while(c.measureText(t).width>maxW){let i=1;while(i<t.length&&c.measureText(t.slice(0,i+1)).width<=maxW)i++;out.push(t.slice(0,i));t=t.slice(i)}line=t}
+    out.push(line.trimEnd())}return out}
+async function buildPdfPages(list){
+  if(document.fonts&&document.fonts.ready)try{await document.fonts.ready}catch(e){}
+  const pages=[];let cv,c,y;const gen=new Date().toLocaleString(LANG==='en'?'en-GB':'th-TH',{dateStyle:'medium',timeStyle:'short'});
+  function np(){cv=document.createElement('canvas');cv.width=PW;cv.height=PH;c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,PW,PH);
+    c.fillStyle='#1F2430';c.fillRect(0,0,PW,96);c.fillStyle='#fff';c.font=`700 30px ${PFONT}`;c.textBaseline='middle';c.fillText(repTitle(),PM,48);
+    c.font=`400 20px ${PFONT}`;const gw=c.measureText(gen).width;c.fillText(gen,PW-PM-gw,48);c.textBaseline='alphabetic';pages.push(cv);y=140}
+  const need=h=>{if(y+h>PH-80)np()};
+  for(const r of list){np();
+    c.fillStyle='#'+(SEVC[r.sev]||'1F2430');c.font=`700 40px ${PFONT}`;c.fillText(`${r.typeName} – ${r.sev}  |  ${r.discName}`,PM,y+36);y+=70;
+    const LW=300,VW=PCW-LW-32,LH=36;c.font=`400 24px ${PFONT}`;
+    for(const [l,v] of reportRows(r)){c.font=`400 24px ${PFONT}`;const lines=wrapLines(c,v,VW);const h=Math.max(1,lines.length)*LH+20;need(h);
+      c.fillStyle='#F4F5F7';c.fillRect(PM,y,LW,h);c.strokeStyle='#C9CED6';c.lineWidth=1.5;c.strokeRect(PM,y,PCW,h);c.beginPath();c.moveTo(PM+LW,y);c.lineTo(PM+LW,y+h);c.stroke();
+      c.fillStyle='#3D4450';c.font=`700 22px ${PFONT}`;c.fillText(l.trim(),PM+14,y+36);c.fillStyle='#1F2430';c.font=`400 24px ${PFONT}`;lines.forEach((ln,i)=>c.fillText(ln,PM+LW+16,y+36+i*LH));y+=h}
+    async function drawImg(blob,x,yy,mw,mh){const u=URL.createObjectURL(blob);try{const im=await loadImg(u);const k=Math.min(mw/im.naturalWidth,mh/im.naturalHeight);const w=im.naturalWidth*k,h=im.naturalHeight*k;c.drawImage(im,x+(mw-w)/2,yy,w,h);c.strokeStyle='#C9CED6';c.strokeRect(x+(mw-w)/2,yy,w,h);return h}finally{URL.revokeObjectURL(u)}}
+    const sub=t=>{need(60);y+=24;c.fillStyle='#3D4450';c.font=`700 26px ${PFONT}`;c.fillText(t,PM,y+26);y+=42};
+    if(r.pinBlob){sub('📍 '+T('แบบปักหมุด'));need(400);const mh=Math.min(820,PH-80-y);y+=await drawImg(r.pinBlob,PM,y,PCW,mh)+10}
+    const ph=r.photoBlobs||[];
+    if(ph.length){sub(`📷 ${T('รูปถ่าย')} (${ph.length})`);const cw=(PCW-24)/2,ch=Math.round(cw*0.75);
+      for(let i=0;i<ph.length;i+=2){need(ch+40);for(let j=i;j<Math.min(i+2,ph.length);j++){const x=PM+(j-i)*(cw+24);c.fillStyle='#F4F5F7';c.fillRect(x,y,cw,ch);await drawImg(ph[j],x,y,cw,ch);c.fillStyle='#5A6270';c.font=`400 18px ${PFONT}`;c.fillText(T('รูป')+' '+(j+1),x,y+ch+24)}y+=ch+40}}
+  }
+  pages.forEach((p,i)=>{const cc=p.getContext('2d');cc.fillStyle='#5A6270';cc.font=`400 18px ${PFONT}`;const t=`${i+1} / ${pages.length}`;cc.fillText(t,PW-PM-cc.measureText(t).width,PH-40)});
+  return pages}
+async function buildPdf(list){const pages=await buildPdfPages(list);const parts=[];let len=0;const off=[];
+  const push=x=>{const u=typeof x==='string'?ENC.encode(x):x;parts.push(u);len+=u.length};
+  push('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');const n=pages.length;
+  off[1]=len;push('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+  off[2]=len;push(`2 0 obj\n<< /Type /Pages /Kids [${pages.map((_,i)=>`${3+i*3} 0 R`).join(' ')}] /Count ${n} >>\nendobj\n`);
+  for(let i=0;i<n;i++){const po=3+i*3,co=po+1,io=po+2;const jpg=new Uint8Array(await (await toBlob(pages[i],'image/jpeg',0.85)).arrayBuffer());
+    off[po]=len;push(`${po} 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /XObject << /Im0 ${io} 0 R >> >> /Contents ${co} 0 R >>\nendobj\n`);
+    const cs='q 595.28 0 0 841.89 0 0 cm /Im0 Do Q';off[co]=len;push(`${co} 0 obj\n<< /Length ${cs.length} >>\nstream\n${cs}\nendstream\nendobj\n`);
+    off[io]=len;push(`${io} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${PW} /Height ${PH} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>\nstream\n`);push(jpg);push('\nendstream\nendobj\n')}
+  const total=2+n*3,xo=len;let x=`xref\n0 ${total+1}\n0000000000 65535 f \n`;for(let i=1;i<=total;i++)x+=String(off[i]).padStart(10,'0')+' 00000 n \n';
+  push(x+`trailer\n<< /Size ${total+1} /Root 1 0 R >>\nstartxref\n${xo}\n%%EOF\n`);return new Blob(parts,{type:'application/pdf'})}
+
+/* ---------- ปุ่ม Export ---------- */
+async function selectedLogs(){const ids=[...document.querySelectorAll('#logList input.sel:checked')].map(i=>i.dataset.id);const L=(await all('log')).filter(r=>ids.includes(r.id)).sort((a,b)=>a.at.localeCompare(b.at));return L}
+async function runExport(kind,list,name){if(!list.length)return toast(T('เลือกรายการก่อน'));toast(T('กำลังสร้างไฟล์…'),15000);
+  try{const blob=kind==='docx'?await buildDocx(list):await buildPdf(list);const fname=`${name}.${kind}`;
+    const file=new File([blob],fname,{type:blob.type});
+    if(window.__shareExports&&navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:fname})}else download(blob,fname);
+    toast(T('สร้างไฟล์แล้ว: ')+fname,3500)}catch(e){if(e.name!=='AbortError')toast(T('สร้างไฟล์ไม่สำเร็จ: ')+e.message,5000)}}
+const repName=()=>`${PROJECT}_QAQC_Report_${new Date().toISOString().slice(0,10)}`;
+$('#bWord').onclick=async()=>runExport('docx',await selectedLogs(),repName());
+$('#bPdf').onclick=async()=>runExport('pdf',await selectedLogs(),repName());
+$('#bSelAll').onclick=()=>{const b=[...document.querySelectorAll('#logList input.sel')];const on=b.some(x=>!x.checked);b.forEach(x=>x.checked=on)};
+$('#bOutWord').onclick=()=>{const r=st.lastLog&&mem.log.get(st.lastLog);if(r)runExport('docx',[r],r.id)};
+$('#bOutPdf').onclick=()=>{const r=st.lastLog&&mem.log.get(st.lastLog);if(r)runExport('pdf',[r],r.id)};
+
+/* ===== Settings ===== */
+function loadSettings(){$('#sName').value=S().name||''}
+$('#sSave').onclick=()=>{ls.set('qc.settings',{name:$('#sName').value.trim()});refreshId();toast(T('บันทึกแล้ว'))};
+
+/* PWA: ใช้งานออฟไลน์ + ขอให้เครื่องเก็บข้อมูลถาวร */
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+window.addEventListener('unhandledrejection',e=>{toast((e.reason&&e.reason.message)||String(e.reason),5000)});
+/* ===== Init ===== */
+(async()=>{
+  cB=chips($('#cBuilding'),BUILDINGS,false,b=>{const cur=$('#fFloor').value;fillSel($('#fFloor'),floorsOf(b));if(floorsOf(b).includes(cur))$('#fFloor').value=cur;fillDwgSelect()});
+  $('#dBld').onchange=()=>fillSel($('#dFlr'),floorsOf($('#dBld').value));
+  $('#calSwap').onclick=()=>{const a=$('#calCols').value;$('#calCols').value=$('#calRows').value;$('#calRows').value=a;drawCalMarks()};cD=chips($('#cDisc'),DISC,false,refreshId,true);cT=chips($('#cType'),TYPES,false,refreshId,true);cS=chips($('#cSev'),SEVS);
+  fillSel($('#fFloor'),FLOORS);fillSel($('#fCheck'),CHECKS);fillSel($('#dBld'),BUILDINGS);fillSel($('#dFlr'),floorsOf(BUILDINGS[0]));
+  $('#fFloor').onchange=fillDwgSelect;
+  $('#langBtn').onclick=()=>{LANG=LANG==='en'?'th':'en';try{localStorage.setItem('qc.lang',LANG)}catch(e){}applyLang();refreshId();renderDwgList();renderLog();clrReset();renderPhotos();renderRefs();fillDwgSelect();if(st.out){st.out.msg=buildMsg(st.out.r);$('#outMsg').textContent=st.out.msg;$('#bLineText').href='https://line.me/R/share?text='+encodeURIComponent(st.out.msg);renderOut()}};
+  applyLang();
+  await idb();loadSettings();refreshId();await fillDwgSelect();renderDwgList();
+  if(!DB)toast(T('เบราว์เซอร์นี้เก็บข้อมูลถาวรไม่ได้ – แบบจะหายเมื่อปิดหน้า'),4500);
+})();
+</script>
+</body>
+</html>
